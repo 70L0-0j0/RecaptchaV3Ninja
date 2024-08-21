@@ -32,7 +32,7 @@ This tool is particularly valuable for developers looking to automate reCAPTCHA 
 # Installation
 
 ```bash
-pip install ninjav3
+pip install RecaptchaV3Ninja
 ```
 # Usage Examples
 
@@ -44,7 +44,7 @@ This example demonstrates how to use the Ninja reCAPTCHA V3 Bypass module to ret
 ```python
 # Sync and url example
 
-from ninja import Ninja
+from recaptchav3ninja import Ninja
 
 # URL containing query parameters for reCAPTCHA
 # This URL includes pre-defined values for 'ar', 'k', 'co', 'hl', 'v', 'size', and 'cb'.
@@ -71,7 +71,7 @@ This example demonstrates how to use the asynchronous methods of the Ninja reCAP
 
 ```python
 import asyncio
-from ninja import Ninja
+from recaptchav3ninja import Ninja
 
 async def main():
     # URL containing query parameters for reCAPTCHA
@@ -102,7 +102,7 @@ asyncio.run(main())
 This example demonstrates how to use the synchronous methods of the Ninja reCAPTCHA V3 Bypass module to retrieve a reCAPTCHA token by initializing with specific parameters. This is useful when you need to specify each parameter individually rather than extracting them from a URL.
  
 ```python
-from ninja import Ninja
+from recaptchav3ninja import Ninja
 
 add_instance = Ninja.Sync()
 data = add_instance.Add(
@@ -126,7 +126,7 @@ This example demonstrates how to use the Asynchronous methods of the Ninja reCAP
 
 ```python
 import asyncio
-from ninja import Ninja
+from recaptchav3ninja import Ninja
 
 async def main():
 
