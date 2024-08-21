@@ -6,8 +6,11 @@ import ssl
 import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-
 class Functions:
+    """
+    A utility class containing static methods for handling various functionalities 
+    related to URL parsing and other helper operations.
+    """
     @staticmethod
     def _url_ext(url: str = str) -> str:
         """
@@ -23,52 +26,51 @@ class Functions:
         query_params = parse_qs(parsed_url.query)    
         params_dict = {k: v[0] if len(v) == 1 else v for k, v in query_params.items()}    
         return params_dict
-    
 
-    """ Sync Handler for get captcha Token """
+    """ Synchronous Handler for retrieving reCAPTCHA Token """
     class SyncV3:
         """
-    Class to handle interactions with Google's reCAPTCHA service.
+        A class to handle interactions with Google's reCAPTCHA service.
 
-    Attributes:
-        url (str): Base URL for the request.
-        params (dict): Parameters for the request.
-        headers (dict): HTTP headers for the request.
-        proxies (dict, optional): Proxy configuration for the request.
+        Attributes:
+            url (str): Base URL for the reCAPTCHA request.
+            params (dict): Parameters for the request (e.g., site key, version, etc.).
+            headers (dict): HTTP headers for the request.
+            proxies (dict, optional): Proxy configuration for the request.
+            user_agent (str): The User-Agent string to be used in the HTTP headers.
 
-    Methods:
-        _get_i_token(): Retrieves the initial token from the HTML response.
-        _get_v_token(initial_token): Retrieves the verification token using the initial token.
-        _get_token(): Combines the initial token and verification token to obtain the final token.
-    """
+        Methods:
+            _get_i_token(): Retrieves the initial token from the reCAPTCHA HTML response.
+            _get_v_token(initial_token): Retrieves the verification token using the initial token.
+            _get_token(): Combines the initial and verification tokens to obtain the final reCAPTCHA token.
+        """
         def __init__(self, ar: int = None, k: str = None, co: str = None, hl: str = "en", v: str = None, size: str = "invisible", cb: str = None, url: str = None, proxy=None, user_agent: str = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 Avast/126.0.0.0'):
             """
-        Initializes the SyncV3 instance.
-
-        Args:
-            ar (int, optional): Parameter 'ar' for the request.
-            k (str, optional): Parameter 'k' for the request.
-            co (str, optional): Parameter 'co' for the request.
-            hl (str, optional): Parameter 'hl' for the request (default is "en").
-            v (str, optional): Parameter 'v' for the request.
-            size (str, optional): Parameter 'size' for the request (default is "invisible").
-            cb (str, optional): Parameter 'cb' for the request.
-            url (str, optional): URL to extract parameters from (overrides individual parameters).
-            proxy (dict, optional): Proxy configuration for the request.
-            user_agent (str, optional): User-Agent header for the request (default is a common browser User-Agent).
-        """
+            Initializes the SyncV3 instance.
+            Args:
+                ar (int, optional): Parameter 'ar' for the request.
+                k (str, optional): Parameter 'k' for the request.
+                co (str, optional): Parameter 'co' for the request.
+                hl (str, optional): Parameter 'hl' for the request (default is "en").
+                v (str, optional): Parameter 'v' for the request.
+                size (str, optional): Parameter 'size' for the request (default is "invisible").
+                cb (str, optional): Parameter 'cb' for the request.
+                url (str, optional): URL to extract parameters from (overrides individual parameters).
+                proxy (dict, optional): Proxy configuration for the request.
+                user_agent (str, optional): User-Agent header for the request (default is a common browser User-Agent).
+            """
             self.url = "https://www.google.com/recaptcha/api2/anchor"
 
             params = Functions._url_ext(url) if url else None
             self.params = {
-            "ar": params.get("ar") if params else ar,
-            "k": params.get("k") if params else k,
-            "co": params.get("co") if params else co,
-            "hl": params.get("hl") if params else hl,
-            "v": params.get("v") if params else v,
-            "size": params.get("size") if params else size,
-            "cb": params.get("cb") if params else cb
-        }
+                "ar": params.get("ar") if params else ar,
+                "k": params.get("k") if params else k,
+                "co": params.get("co") if params else co,
+                "hl": params.get("hl") if params else hl,
+                "v": params.get("v") if params else v,
+                "size": params.get("size") if params else size,
+                "cb": params.get("cb") if params else cb
+            }
             self.headers = {
                 "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
                 "accept-encoding": "gzip, deflate, br, zstd",
@@ -92,12 +94,14 @@ class Functions:
 
         def _get_i_token(self):
             """
-            Retrieves the initial token from the HTML response by sending a GET request.
+            Retrieves the initial reCAPTCHA token from the HTML response by sending a GET request.
+
+            This method sends a GET request to the reCAPTCHA URL with the provided parameters and
+            headers, and then parses the HTML response to extract the 'recaptcha-token' input field.
 
             Returns:
-                str: The initial token if found; otherwise, None.
+                str: The initial reCAPTCHA token if found; otherwise, None.
             """
-            
             max_retries = 3
             for attempt in range(max_retries):
                 try:
@@ -113,13 +117,16 @@ class Functions:
 
         def _get_v_token(self, initial_token):
             """
-            Retrieves the verification token using the initial token by sending a POST request.
+            Retrieves the verification token using the initial token via a POST request.
 
             Args:
                 initial_token (str): The initial token obtained from the HTML response.
 
+            This method sends a POST request with the initial token to the reCAPTCHA service
+            to obtain the final verification token.
+
             Returns:
-                str: The verification token response if successful; otherwise, None.
+                str: The verification token if the request is successful; otherwise, None.
             """
             post_url = "https://www.google.com/recaptcha/api2/reload"
             post_params = {
@@ -161,13 +168,15 @@ class Functions:
                     attempt += 1
             return None
 
-
         def _get_token(self):
             """
-            Obtains the final token by combining the initial and verification tokens.
+            Combines the initial and verification tokens to obtain the final reCAPTCHA token.
+
+            This method first retrieves the initial token using `_get_i_token`, then uses that token
+            to obtain the verification token via `_get_v_token`. The verification token is parsed and returned.
 
             Returns:
-                str: The final token if successful; otherwise, None.
+                str: The final reCAPTCHA token if successful; otherwise, None.
             """
             initial_token = self._get_i_token()
             if initial_token:
@@ -243,10 +252,13 @@ class Functions:
 
         async def _get_i_token(self, session):
             """
-            Asynchronously retrieves the initial token from the HTML response by sending a GET request.
+            Retrieves the initial reCAPTCHA token from the HTML response by sending a GET request.
+
+            This method sends a GET request to the reCAPTCHA URL with the provided parameters and
+            headers, and then parses the HTML response to extract the 'recaptcha-token' input field.
 
             Returns:
-                str: The initial token if found; otherwise, None.
+                str: The initial reCAPTCHA token if found; otherwise, None.
             """
             async with session.get(self.url, params=self.params, headers=self.headers, proxy=self.proxies) as response:
                 if response.status == 200:
@@ -259,13 +271,16 @@ class Functions:
 
         async def _get_v_token(self, initial_token, session):
             """
-            Asynchronously retrieves the verification token using the initial token by sending a POST request.
+            Retrieves the verification token using the initial token via a POST request.
 
             Args:
                 initial_token (str): The initial token obtained from the HTML response.
 
+            This method sends a POST request with the initial token to the reCAPTCHA service
+            to obtain the final verification token.
+
             Returns:
-                str: The verification token response if successful; otherwise, None.
+                str: The verification token if the request is successful; otherwise, None.
             """
             post_url = "https://www.google.com/recaptcha/api2/reload"
             post_params = {
@@ -304,12 +319,14 @@ class Functions:
 
         async def _get_token(self):
             """
-            Obtains the final token by combining the initial and verification tokens asynchronously.
+            Combines the initial and verification tokens to obtain the final reCAPTCHA token.
+
+            This method first retrieves the initial token using `_get_i_token`, then uses that token
+            to obtain the verification token via `_get_v_token`. The verification token is parsed and returned.
 
             Returns:
-                str: The final token if successful; otherwise, None.
-            """
-            
+                str: The final reCAPTCHA token if successful; otherwise, None.
+            """            
             ssl_context = ssl.create_default_context()
             ssl_context.check_hostname = False
             ssl_context.verify_mode = ssl.CERT_NONE
